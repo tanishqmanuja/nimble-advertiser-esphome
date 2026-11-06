@@ -5,11 +5,14 @@ on ESP32. Broadcast-only (no peripheral/central/GATT).
 
 ## Usage
 
+### From GitHub
+
 ```yaml
 external_components:
   - source:
-      type: local
-      path: ./components  # or: type: git, url: <this-repo-url>
+      type: git
+      url: https://github.com/tanishqmanuja/nimble-advertiser-esphome
+      ref: main
 
 nimble_advertiser:
   id: nimble_adv
@@ -26,6 +29,15 @@ button:
       - nimble_advertiser.advertise:
           duration: 400ms  # or "forever", or omit for default
           lambda: "return std::vector<uint8_t>{0x02,0x01,0x06};"
+```
+
+### Local
+
+```yaml
+external_components:
+  - source:
+      type: local
+      path: ./components
 ```
 
 Actions: `nimble_advertiser.advertise` (required `lambda` returning
