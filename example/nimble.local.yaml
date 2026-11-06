@@ -1,0 +1,48 @@
+esphome:
+  name: nimble-advertiser-example
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+external_components:
+  - source: { type: local, path: ../components }
+
+nimble_advertiser:
+  id: nimble_adv
+  min_interval: 20ms
+  max_interval: 40ms
+  default_duration: 400ms
+  own_addr_type: public  # public | random
+  tx_power: "3dBm"       # -12 -9 -6 -3 0 3 6 9
+
+button:
+  - platform: template
+    name: "Advertise once"
+    on_press:
+      - nimble_advertiser.advertise:
+          duration: 400ms  # or "forever", or omit for default_duration
+          lambda: |-
+            std::vector<uint8_t> adv;
+            // Flags
+            adv.push_back(0x02); adv.push_back(0x01); adv.push_back(0x06);
+            // Service data: 0x16, UUID 0xFCD2 (BTHome), payload...
+            adv.push_back(0x05); adv.push_back(0x16);
+            adv.push_back(0xD2); adv.push_back(0xFC); adv.push_back(0x00);
+            return adv;
+  - platform: template
+    name: "Stop advertising"
+    on_press:
+      - nimble_advertiser.stop:
+
+# Optional: wait until the burst finishes (e.g. before deep-sleep)
+# script:
+#   - id: advertise_then_sleep
+#     then:
+#       - nimble_advertiser.advertise:
+#           lambda: "return std::vector<uint8_t>{0x02,0x01,0x06};"
+#       - wait_until:
+#           condition:
+#             lambda: "return !id(nimble_adv).is_advertising() && !id(nimble_adv).is_pending();"
+#           timeout: 2s
